@@ -3,7 +3,7 @@ import logging
 import traceback
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from detector.services import mutant_detector
+from detector.services import MutatorService
 
 
 logger = logging.getLogger(__name__)
@@ -22,13 +22,28 @@ class MutantViewSet(viewsets.ViewSet):
             if type(request.data['dna']) is not list:
                 logger.error('----------- ws needs a list!')
                 return Response(status=status.HTTP_400_BAD_REQUEST)
-            res = mutant_detector(request.data['dna'])
+            res = MutatorService.get_instance().detect(request.data['dna'])
             if res:
                 logger.error('----------- i found a mutant!')
                 return Response()
             else:
                 logger.error('----------- i don\'t found a mutant')
                 return Response(status=status.HTTP_403_FORBIDDEN)
+        except KeyError:
+            logger.error(f'error with input values => {traceback.print_exc()}')
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
+        
+class StatsViewSet(viewsets.ViewSet):
+    """
+    Resource asociado a las estadisticas
+    """
+    def list(self, request):
+        """
+        Retorna el listado de estadisticas
+        """
+        try:
+            pass
         except KeyError:
             logger.error(f'error with input values => {traceback.print_exc()}')
             return Response(status=status.HTTP_400_BAD_REQUEST)
