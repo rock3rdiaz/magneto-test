@@ -43,7 +43,7 @@ class StatsViewSet(viewsets.ViewSet):
         Retorna el listado de estadisticas
         """
         try:
-            pass
+            return Response()
         except KeyError:
             logger.error(f'error with input values => {traceback.print_exc()}')
             return Response(status=status.HTTP_400_BAD_REQUEST)

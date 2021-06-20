@@ -45,12 +45,18 @@ class MutatorService:
         return MutatorService.horizontally(new_dna)
 
     def diagonal(cls, dna:List[str]) -> Tuple[bool, str]:
+        """
+        solo se busca en entradas con 4 o mas caracteres
+        """
         new_dna = []
-        for c in range(len(dna[0])):
-            el = ''
-            for r in range(len(dna)):
-                el = dna[c][(len(dna) - 1) - r]
-                print(el)
+        for c in range(len(dna)):
+            for r in range(len(dna[0])):
+                el = ''
+                for index in range(len(dna)):
+                    if (c + index) < len(dna) and (r + index) < len(dna):
+                        el = el + dna[c + index][r + index]
+            new_dna.append(el)
+        cls.horizontally([i for i in new_dna if len(i) >= 4])
     
     @classmethod        
     def detect(cls, dna: List[str]) -> bool:
