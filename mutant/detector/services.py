@@ -76,9 +76,14 @@ class MutatorService:
                 s.ratio = s.count_mutant_dna / s.count_human_dna
                 s.save()
         else:
-            Stats.objects.create(count_mutant_dna=1,
+            if res:
+                Stats.objects.create(count_mutant_dna=1,
+                                    count_human_dna=(len(dna) - 1),
+                                    ratio = 1 / (len(dna) - 1))
+            else:
+                Stats.objects.create(count_mutant_dna=0,
                                 count_human_dna=(len(dna) - 1),
-                                ratio = 1 / (len(dna) - 1))
+                                ratio = 0 / (len(dna) - 1))
                 
     @staticmethod        
     def detect(dna: List[str]) -> bool:
@@ -88,21 +93,22 @@ class MutatorService:
         @param dna: Lista de secuencias de ADN
         @return bool: True si es mutante, False en caso contrario 
         """
-        res, dna_founded = MutatorService.horizontally(dna)        
-        if not res:
-            res, dna_founded = MutatorService.vertically(dna) 
-            if not res:
-                res, dna_founded = MutatorService.diagonal(dna)
-                if not res:
-                    MutatorService.__update_stats(dna, res)
-                    return False
-                else:
-                    MutatorService.__update_stats(dna, res)
-                    return True
-            else:
-                MutatorService.__update_stats(dna, res)
-                return True
-        else:
+        res, dna_founded = MutatorService.horizontally(dna)
+        if res:
+            Mutants.objects.create(dna=dna_founded)
             MutatorService.__update_stats(dna, res)
             return True
+        else:
+            res, dna_founded = MutatorService.vertically(dna) 
+            if res:
+                Mutants.objects.create(dna=dna_founded)
+                MutatorService.__update_stats(dna, res)
+                return True
+            else:
+                res, dna_founded = MutatorService.diagonal(dna)
+                if res:
+                    Mutants.objects.create(dna=dna_founded)
+                    MutatorService.__update_stats(dna, res)
+                    return True
+        MutatorService.__update_stats(dna, res)
         return False
