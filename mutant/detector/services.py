@@ -62,6 +62,24 @@ class MutatorService:
                 new_dna.append(el)
         return MutatorService.horizontally([i for i in new_dna if len(i) >= 4])
     
+    @staticmethod
+    def __update_stats(dna: List[str], res: bool) -> None:
+        s = Stats.objects.first()
+        if s:
+            if res:
+                s.count_human_dna = s.count_human_dna + (len(dna) - 1)
+                s.count_mutant_dna = s.count_mutant_dna + 1
+                s.ratio = s.count_mutant_dna / s.count_human_dna
+                s.save()
+            else:
+                s.count_human_dna = s.count_human_dna + (len(dna))
+                s.ratio = s.count_mutant_dna / s.count_human_dna
+                s.save()
+        else:
+            Stats.objects.create(count_mutant_dna=1,
+                                count_human_dna=(len(dna) - 1),
+                                ratio = 1 / (len(dna) - 1))
+                
     @staticmethod        
     def detect(dna: List[str]) -> bool:
         """
@@ -70,71 +88,21 @@ class MutatorService:
         @param dna: Lista de secuencias de ADN
         @return bool: True si es mutante, False en caso contrario 
         """
-        res, dna_founded = MutatorService.horizontally(dna)
-        s = Stats.objects.first()
-        if res:
-            if s:
-                s.count_mutant_dna = s.count_mutant_dna + 1
-                s.count_human_dna = s.count_human_dna + (len(dna) - 1)
-                s.ratio = s.count_mutant_dna / s.count_human_dna
-                s.save()
+        res, dna_founded = MutatorService.horizontally(dna)        
+        if not res:
+            res, dna_founded = MutatorService.vertically(dna) 
+            if not res:
+                res, dna_founded = MutatorService.diagonal(dna)
+                if not res:
+                    MutatorService.__update_stats(dna, res)
+                    return False
+                else:
+                    MutatorService.__update_stats(dna, res)
+                    return True
             else:
-                Stats.objects.create(count_mutant_dna=1,
-                                     count_human_dna=(len(dna) - 1),
-                                     ratio = 1 / (len(dna) - 1))
-            Mutants.objects.create(dna=dna_founded)   
-            return res
+                MutatorService.__update_stats(dna, res)
+                return True
         else:
-            if s:
-                s.count_human_dna = s.count_human_dna + (len(dna) - 1)
-                s.ratio = s.count_mutant_dna / s.count_human_dna
-                s.save()
-            else:
-                Stats.objects.create(count_mutant_dna=1,
-                                     count_human_dna=(len(dna) - 1),
-                                     ratio = 1 / (len(dna) - 1))
-        res, dna_founded = MutatorService.vertically(dna)
-        if res:
-            if s:
-                s.count_mutant_dna = s.count_mutant_dna + 1
-                s.count_human_dna = s.count_human_dna + (len(dna) - 1)
-                s.ratio = s.count_mutant_dna / s.count_human_dna
-                s.save()
-            else:
-                Stats.objects.create(count_mutant_dna=1,
-                                     count_human_dna=(len(dna) - 1),
-                                     ratio = 1 / (len(dna) - 1))
-            Mutants.objects.create(dna=dna_founded)
-            return res
-        else:
-            if s:
-                s.count_human_dna = s.count_human_dna + (len(dna) - 1)
-                s.ratio = s.count_mutant_dna / s.count_human_dna
-                s.save()
-            else:
-                Stats.objects.create(count_mutant_dna=1,
-                                     count_human_dna=(len(dna) - 1),
-                                     ratio = 1 / (len(dna) - 1))
-        res, dna_founded = MutatorService.diagonal(dna)
-        if res:
-            if s:
-                s.count_mutant_dna = s.count_mutant_dna + 1
-                s.count_human_dna = s.count_human_dna + (len(dna) - 1)
-                s.ratio = s.count_mutant_dna / s.count_human_dna
-                s.save()
-            else:
-                Stats.objects.create(count_mutant_dna=1,
-                                     count_human_dna=(len(dna) - 1),
-                                     ratio = 1 / (len(dna) - 1))
-            Mutants.objects.create(dna=dna_founded)
-            return res
-        else:
-            if s:
-                s.count_human_dna = s.count_human_dna + (len(dna) - 1)
-                s.ratio = s.count_mutant_dna / s.count_human_dna
-                s.save()
-            else:
-                Stats.objects.create(count_mutant_dna=1,
-                                     count_human_dna=(len(dna) - 1),
-                                     ratio = 1 / (len(dna) - 1))
+            MutatorService.__update_stats(dna, res)
+            return True
         return False
