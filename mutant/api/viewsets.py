@@ -1,4 +1,5 @@
-import re
+from detector.models import Stats
+from api.serializers import StatsSerializer
 import logging
 import traceback
 from rest_framework import viewsets, status
@@ -43,7 +44,9 @@ class StatsViewSet(viewsets.ViewSet):
         Retorna el listado de estadisticas
         """
         try:
-            return Response()
+            stats = Stats.objects.first()
+            serializer = StatsSerializer(stats)
+            return Response(serializer.data)
         except KeyError:
             logger.error(f'error with input values => {traceback.print_exc()}')
             return Response(status=status.HTTP_400_BAD_REQUEST)
