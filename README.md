@@ -1,5 +1,8 @@
 # mutant-detector
 
+## Para correr los tests
+1. Con su entorno local activado y en la carpeta mutant-detector/mutant ejecute pytest detector/tests.py 
+
 ## Si desea levantar el servicio de manera local, siga las siguientes instrucciones:
 
 1. Clone el repositorio desde la rama master
