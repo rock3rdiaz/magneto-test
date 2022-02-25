@@ -28,7 +28,6 @@ def dna_validator(func):
         dna_sequence = ''.join(args[1].data['dna'])
         invalid = re.findall(compile_pattern, dna_sequence)
         if invalid:
-            print(f'--------------- invalid input => {invalid}')
             return Response(status=status.HTTP_400_BAD_REQUEST, data={
                 'message': f'Invalid dna char: {invalid}'
             })

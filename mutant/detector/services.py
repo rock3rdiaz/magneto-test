@@ -14,7 +14,6 @@ sequence_len = 4
 
 def horizontally(dna: List[str]) -> List[str]:
     dna_founded = re.findall(compile_pattern, ''.join(dna))
-    print(f'------------- dna founded => {dna_founded}')
     return dna_founded
 
 
