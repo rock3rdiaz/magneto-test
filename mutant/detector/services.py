@@ -3,7 +3,7 @@ import math
 import re
 from typing import List, Tuple
 
-from .models import Mutants, Stats
+from .models import Stats, DNA
 
 logger = logging.getLogger(__name__)
 
@@ -12,34 +12,21 @@ compile_pattern = re.compile(pattern)
 sequence_len = 4
 
 
-def horizontally(dna: List[str]) -> Tuple[bool, list]:
+def horizontally(dna: List[str]) -> List[str]:
     dna_founded = re.findall(compile_pattern, ''.join(dna))
     print(f'------------- dna founded => {dna_founded}')
-    if len(dna_founded) >= 1:
-        return True, dna_founded
-    return False, None
+    return dna_founded
 
 
-def vertically(dna: List[str]) -> Tuple[bool, str]:
+def vertically(dna: List[str]) -> List[str]:
     new_dna = [''.join(i) for i in zip(*dna)]
     return horizontally(new_dna)
 
 
-def diagonal(dna_list: List[str]) -> Tuple[bool, str]:
+def left_to_right_diagonal(dna_list: List[str]) -> List[str]:
     """
-    Solo se busca en entradas con 4 o mas caracteres en diagonal tanto
-    de derecha a izquierda como de izquierda a derecha
+    Left to right Diagonal search
     """
-    # items = []
-    # half_size = len(dna_list) // 2
-    # for index, row in enumerate(dna_list):
-    #     if index < half_size:
-    #         items.append(row[:(half_size + index)])
-    #     elif index == half_size and len(dna_list) % 2 != 0:
-    #         items.append(row[(index - half_size + 1):len(row) - 1])
-    #     else:
-    #         items.append(row[(index - half_size + 1):])
-
     items = []
     data = ''.join(dna_list)
     size = len(data)
@@ -47,64 +34,72 @@ def diagonal(dna_list: List[str]) -> Tuple[bool, str]:
     interval = rank + 1
     # positions inside sequence to get diagonal string
     valid_positions = [(index, rank * index) for index in range(0, size) if index <= (rank - sequence_len)]
-    print(f'------------------ valid_positions => {valid_positions}')
     for pivot1, pivot2 in valid_positions:
         if pivot1 == pivot2:
             items.append(data[pivot1::interval])
         else:
             items.append(data[pivot1:size - (pivot1 * rank):interval])
             items.append(data[pivot2::interval])
-    print(f'--------------------- items => {items}')
     return horizontally(items)
 
 
-def __update_stats(dna: List[str], res: bool) -> None:
-    s = Stats.objects.first()
-    if s:
-        if res:
-            s.count_human_dna = s.count_human_dna + (len(dna) - 1)
-            s.count_mutant_dna = s.count_mutant_dna + 1
-            s.ratio = s.count_mutant_dna / s.count_human_dna
-            s.save()
-        else:
-            s.count_human_dna = s.count_human_dna + (len(dna))
-            s.ratio = s.count_mutant_dna / s.count_human_dna
-            s.save()
+def right_to_left_diagonal(dna_list: List[str]) -> Tuple[bool, str]:
+    """
+    Right to lef search
+    """
+    items = []
+    for row in dna_list:
+        items.append(row[::-1])
+    return left_to_right_diagonal(items)
+
+
+def __update_stats_by_type(s: Stats, dna_type: int) -> None:
+    if dna_type:
+        s.count_mutant_dna = s.count_mutant_dna + 1
+        s.ratio = round(s.count_mutant_dna / s.count_human_dna, 2)
+        s.save(update_fields=['count_mutant_dna', 'ratio'])
     else:
-        if res:
-            Stats.objects.create(count_mutant_dna=1,
-                                 count_human_dna=(len(dna) - 1),
-                                 ratio=1 / (len(dna) - 1))
-        else:
-            Stats.objects.create(count_mutant_dna=0,
-                                 count_human_dna=(len(dna) - 1),
-                                 ratio=0 / (len(dna) - 1))
+        s.count_human_dna = s.count_human_dna + 1
+        s.ratio = round(s.count_mutant_dna / s.count_human_dna, 2)
+        s.save(update_fields=['count_human_dna', 'ratio'])
+
+
+def __update_stats(dna: List[str], dna_type: int) -> None:
+    """
+    :param dna_sequence => DNA sequence received
+    :param dna_type => {0: human, 1: mutant}
+    """
+    dna_sequence = ''.join(dna)
+    s = Stats.objects.first()
+    dna, created = DNA.objects.get_or_create(dna=dna_sequence, type=dna_type)
+    if created:
+        __update_stats_by_type(s, dna_type)
 
 
 def detect(dna: List[str]) -> bool:
     """
-    Funcion que detecta si la secuencia de ADN pertenece o no a
-    un mutante.
-    @param dna: Lista de secuencias de ADN
-    @return bool: True si es mutante, False en caso contrario
+    Detection start point
+    @param dna: ADN sequences
+    @return bool: ADN type, True to mutants, False otherwise
     """
-    dna_list = ''.join(dna)
-    res, dna_founded = horizontally(dna_list)
-    if res:
-        Mutants.objects.create(dna=dna_founded)
-        __update_stats(dna, res)
+    dna_founded = horizontally(dna)
+    if len(dna_founded) > 1:
+        __update_stats(dna, 1)
         return True
     else:
-        res, dna_founded = vertically(dna)
-        if res:
-            Mutants.objects.create(dna=dna_founded)
-            __update_stats(dna, res)
+        dna_founded.extend(vertically(dna))
+        if len(dna_founded) > 1:
+            __update_stats(dna, 1)
             return True
         else:
-            res, dna_founded = diagonal(dna)
-            if res:
-                Mutants.objects.create(dna=dna_founded)
-                __update_stats(dna, res)
+            dna_founded.extend(left_to_right_diagonal(dna))
+            if len(dna_founded) > 1:
+                __update_stats(dna, 1)
                 return True
-    __update_stats(dna, res)
-    return False
+            else:
+                dna_founded.extend(right_to_left_diagonal(dna))
+                if len(dna_founded) > 1:
+                    __update_stats(dna, 1)
+                    return True
+                __update_stats(dna, 0)
+                return False

@@ -1,5 +1,7 @@
 import logging
+import re
 import traceback
+from functools import wraps
 
 from rest_framework import viewsets, status
 from rest_framework.response import Response
@@ -10,21 +12,48 @@ from detector.services import detect
 
 logger = logging.getLogger(__name__)
 
+pattern = '[^ACTG]'
+compile_pattern = re.compile(pattern)
+
+
+def dna_validator(func):
+    """
+    Input validator
+    :param func:
+    :return:
+    """
+
+    @wraps(func)
+    def inner(*args, **kwargs):
+        dna_sequence = ''.join(args[1].data['dna'])
+        invalid = re.findall(compile_pattern, dna_sequence)
+        if invalid:
+            print(f'--------------- invalid input => {invalid}')
+            return Response(status=status.HTTP_400_BAD_REQUEST, data={
+                'message': f'Invalid dna char: {invalid}'
+            })
+        return func(*args, **kwargs)
+
+    return inner
+
 
 class MutantViewSet(viewsets.ViewSet):
     """
-    Resource asociado a la busqueda de mutantes
+    Mutant resource
     """
 
+    @dna_validator
     def create(self, request):
         """
-        Verifica si la cadena DNA enviada corresponde a un mutante o humano.
-        Input de la forma "dna":["ATGCGA","CAGTGC","TTATGT","AGAAGG","CCCCTA","TCACTG"]
+        Add a DNA sequence
+        Valid chars => [A,T, C, G]
+        Input form "dna":["ATGCGA","CAGTGC","TTATGT","AGAAGG","CCCCTA","TCACTG"]
         """
         try:
             if type(request.data['dna']) is not list:
-                logger.error('----------- ws needs a list!')
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+                return Response(status=status.HTTP_400_BAD_REQUEST, data={
+                    'message': 'ws needs a list!'
+                })
             res = detect(request.data['dna'])
             if res:
                 logger.error('----------- i found a mutant!')
@@ -39,12 +68,12 @@ class MutantViewSet(viewsets.ViewSet):
 
 class StatsViewSet(viewsets.ViewSet):
     """
-    Resource asociado a las estadisticas
+    Stats resource
     """
 
     def list(self, request):
         """
-        Retorna el listado de estadisticas
+        Return list of stats
         """
         try:
             stats = Stats.objects.first()
