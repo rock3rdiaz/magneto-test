@@ -1,0 +1,58 @@
+{
+	"info": {
+		"_postman_id": "9ee0fe26-e529-4b2e-ba43-16474baed942",
+		"name": "MercadoLibreTest",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "mutant",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"dna\": [\"ATGCGA\", \"CAGTGC\", \"TTATTAT\", \"AGACGG\", \"GCGTCA\", \"TCACTG\"]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{local}}/api/v1/mutant/",
+					"host": [
+						"{{local}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"mutant",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "stats",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{local}}/api/v1/stats/",
+					"host": [
+						"{{local}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"stats",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
