@@ -12,7 +12,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"dna\": [\"ATGCGA\", \"CAGTGC\", \"TTATTAT\", \"AGACGG\", \"GCGTCA\", \"TCACTG\"]\n}",
+					"raw": "{\n    \"dna\": [\"ATGCGA\", \"CAGTGC\", \"TTATGT\", \"AGAAGG\", \"CCACTA\", \"TTGTCG\"]\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -20,9 +20,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{local}}/api/v1/mutant/",
+					"raw": "{{dev}}/api/v1/mutant/",
 					"host": [
-						"{{local}}"
+						"{{dev}}"
 					],
 					"path": [
 						"api",
