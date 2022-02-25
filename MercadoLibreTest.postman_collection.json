@@ -40,9 +40,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{local}}/api/v1/stats/",
+					"raw": "{{dev}}/api/v1/stats/",
 					"host": [
-						"{{local}}"
+						"{{dev}}"
 					],
 					"path": [
 						"api",
