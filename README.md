@@ -17,7 +17,7 @@
 ## Si desea levantar el servicio de manera remota, siga las siguientes instrucciones:
 
 1. Ingrese al servidor remoto via ssh. Asegurese de que tiene acceso a internet desde el servidor para poder descargar las dependencias necesarias por el proyecto.
-2. Clone el repositorio desde la rama master.
+2. Clone el repositorio desde la rama master. Debera tener docker y docker-compose instalados, asi como permisos de ejecucion con el usuario que ingresa al servidor.
 3. En la ruta recien clonada ```mutant-detector```, ejecute ```docker-compose up &```. Esto creara el contenedor y levantara el servicio.
 
 ## Si desea probar el servicio desde AWS o localmente, siga las siguientes instrucciones:
