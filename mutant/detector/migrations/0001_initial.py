@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 def default_dna(apps, schema_editor):
     Stats = apps.get_model('detector', 'Stats')
-    Stats.objects.create(count_mutant_dna=0, count_human_dna=1, ratio=0.0)
+    Stats.objects.create(count_mutant_dna=0, count_human_dna=0, ratio=0.0)
 
 
 class Migration(migrations.Migration):

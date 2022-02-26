@@ -76,8 +76,17 @@ class StatsViewSet(viewsets.ViewSet):
         """
         try:
             stats = Stats.objects.first()
-            serializer = StatsSerializer(stats)
-            return Response(serializer.data)
+            if stats.count_human_dna == 0:
+                serializer = StatsSerializer(stats)
+                response = {
+                    'count_mutant_dna': serializer.data['count_mutant_dna'],
+                    'count_human_dna': serializer.data['count_human_dna'],
+                    'error': 'Human DNA count is zero, Zero division error catched. Ratio is not calculable'
+                }
+            else:
+                serializer = StatsSerializer(stats)
+                response = serializer.data
+            return Response(data=response)
         except KeyError:
             logger.error(f'error with input values => {traceback.print_exc()}')
             return Response(status=status.HTTP_400_BAD_REQUEST)

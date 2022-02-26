@@ -69,5 +69,5 @@ def test_stats():
     detect(human_dna)
     s = Stats.objects.first()
     assert s.count_mutant_dna == 1
-    assert s.count_human_dna == 2
-    assert 0.5 == s.ratio
+    assert s.count_human_dna == 1
+    assert 1.0 == s.ratio

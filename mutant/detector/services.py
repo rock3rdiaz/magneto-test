@@ -55,7 +55,8 @@ def right_to_left_diagonal(dna_list: List[str]) -> Tuple[bool, str]:
 def __update_stats_by_type(s: Stats, dna_type: int) -> None:
     if dna_type:
         s.count_mutant_dna = s.count_mutant_dna + 1
-        s.ratio = round(s.count_mutant_dna / s.count_human_dna, 2)
+        if s.count_human_dna > 0:
+            s.ratio = round(s.count_mutant_dna / s.count_human_dna, 2)
         s.save(update_fields=['count_mutant_dna', 'ratio'])
     else:
         s.count_human_dna = s.count_human_dna + 1
