@@ -1,7 +1,21 @@
+import math
 import pytest
 
 from detector.models import Stats
 from detector.services import detect, horizontally, vertically, left_to_right_diagonal, right_to_left_diagonal
+
+
+def test_nxn():
+    dna = ["GTGCGAT", "CAGTGCT", "TTATGTT", "AGAAGGT", "CCCATAT", "AATTCGT", "ATTTTGT"]
+    dna_sequence = ''.join(dna)
+    print(f'------------------ dna_sequence: {len(dna_sequence)}')
+    assert float(len(dna)) == math.sqrt(len(dna_sequence))
+
+
+def test_not_nxn():
+    dna = ["CAGTGC", "TTATGT", "AGAAGG", "CCCCTA", "TTTTCG"]
+    dna_sequence = ''.join(dna)
+    assert float(len(dna)) != math.sqrt(len(dna_sequence))
 
 
 def test_horizontally():

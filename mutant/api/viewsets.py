@@ -3,6 +3,7 @@ import re
 import traceback
 from functools import wraps
 
+import math
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 
@@ -30,6 +31,10 @@ def dna_validator(func):
         if invalid:
             return Response(status=status.HTTP_400_BAD_REQUEST, data={
                 'message': f'Invalid dna char: {invalid}'
+            })
+        if float(len(args[1].data['dna'])) != math.sqrt(len(dna_sequence)):
+            return Response(status=status.HTTP_400_BAD_REQUEST, data={
+                'message': f'Invalid matrix.'
             })
         return func(*args, **kwargs)
 
